@@ -23,11 +23,11 @@ function humanMove (el) {
 }
 
 function aiMove () {
-  	const scores = generatePossibleMovesForPlayer(TicTacToe.player(), getMoves())
-  	.map(totalScore)
+  	const { scores, moves } = generatePossibleMovesForPlayer(TicTacToe.player(), getMoves())
 
-  	const maxMove = scores.findIndex(i => i === Math.max(...scores))
-  	const minMove = scores.findIndex(i => i === Math.min(...scores))
+  	// They might have the same scores but it is occupied
+  	const maxMove = moves[scores.findIndex(i => i === Math.max(...scores))]
+  	const minMove = moves[scores.findIndex(i => i === Math.min(...scores))]
 
   	// AI MOVE
   	// AI is the maximizing user
@@ -108,13 +108,20 @@ function getCombinations (data) {
 
 function generatePossibleMovesForPlayer (player, data) {
   const nextPlayer = player === 'x' ? 'o' : 'x'
-  return Array(9).fill(0).map((m, i) => {
+  let possibleMoves = []
+  let possibleCombinations = []
+  Array(9).fill(0).forEach((m, i) => {
     const moves = data.split('')
     if (moves[i] === '-') {
       moves[i] = nextPlayer
+      possibleMoves.push(i)
+      possibleCombinations.push(totalScore(moves.join('')))
     }
-    return moves.join('')
   })
+  return {
+  	moves: possibleMoves,
+  	scores: possibleCombinations
+  }
 }
 
 function isWinningMove (data) {
