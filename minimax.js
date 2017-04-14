@@ -1,158 +1,140 @@
 
-function computeMax(props) {
-	// Maximizing player
-
-	const moves = computePossibleMoves(props.moves);
-	const currentBoardScore = computeScores(props);
-	//console.log('isHumanTurn:currentBoardScore', currentBoardScore);
-
-	let nextMoveWithScores = [];
-	moves.map(move => {
-		const player = props.player;
-		props.moves[move] = player;
-		nextMoveWithScores.push({
-			player,
-			move,
-			score: computeScores(props),
-			minimax: computeAIMove(props)
-		})
-		props.moves[move] = null;
-	});
-
-	let nextScore = -9999;
-	let nextMove = null;
-
-	const output = computeScoreForEachMove(nextScore, nextMove, nextMoveWithScores);
-	nextScore = output.nextScore;
-	nextMove = output.nextMove;
-
-	const scores = output.moves.sort((a, b) => {
-		return parseInt(a.score, 10) - parseInt(b.score, 10);
-	});
-	nextMove = scores[0].move;
-	nextScore = scores[0].score;
-		//nextMoveWithScores = null;
-	return { nextScore, nextMove, nextMoveWithScores, moves: output.moves, player:props.player }
+const app = document.getElementById('tictactoe')
+const divs = app.querySelectorAll('div')
+const TicTacToe = {
+  counter: 0,
+  player () {
+    return this.counter % 2 == 0 ? 'x' : 'o'
+  },
+  move () {
+  	this.counter += 1
+  },
+  aiMoveFirst: Math.random() < 0.5
 }
 
-function computeMin(props) {
-	//console.log('isAITurn');
-	// Minimizing player
-
-	const possibleMoves = computePossibleMoves(props.moves);
-	const currentBoardScore = computeScores(props);
-
-	let nextMoveWithScores = [];
-	possibleMoves.forEach(move => {
-		const player = props.player;
-		props.moves[move] = player;
-
-		props.turns = computeRemainingMoves(props.moves)
-		nextMoveWithScores.push({
-			player,
-			move,
-			score: computeScores(props),
-			minimax: computeAIMove(props)
-		})
-		props.moves[move] = null;
-		props.turns = computeRemainingMoves(props.moves)
-	});
-
-	let nextScore = +9999;
-	let nextMove = null;
-	// nextMoveWithScores.map((move) => {
-
-	// 	if (move.score <= nextScore) {
-	// 		nextScore = move.score;
-	// 		nextMove = move.move;
-	// 	}
-	// });
-	const output = computeScoreForEachMove(nextScore, nextMove, nextMoveWithScores);
-	nextScore = output.nextScore;
-	nextMove = output.nextMove;
-
-	const scores = output.moves.sort((a, b) => {
-		return parseInt(b.score, 10) - parseInt(a.score, 10);
-	});
-	nextMove = scores[0].move;
-	nextScore = scores[0].score;
-
-	return { nextScore, nextMove, nextMoveWithScores, moves: output.moves, player:props.player }
+function humanMove (el) {
+	 // Make a move
+  	if (isWinningMove(getMoves())) {
+  		console.log(TicTacToe.player() + ' won!')
+  		return
+  	}
+  	TicTacToe.move()
+  	el.innerHTML = TicTacToe.player()
 }
 
+function aiMove () {
+  	const scores = generatePossibleMovesForPlayer(TicTacToe.player(), getMoves())
+  	.map(totalScore)
 
-function minimax(state) {
+  	const maxMove = scores.findIndex(i => i === Math.max(...scores))
+  	const minMove = scores.findIndex(i => i === Math.min(...scores))
 
- 	const props = Object.assign({}, state);
-	props.turns = computeRemainingMoves(props.moves)
-	props.player = computeCurrentPlayer(props.turns);
-	const isHumanTurn = props.player === 'x';
-	const isMaximizing = isHumanTurn;
-
-	props.bestScore = isHumanTurn ? -9999 : +9999;
-
-	const possibleMoves = computePossibleMoves(props.moves);
-	const currentScore = computeScores(props);
-	
-
-	const possibleMovesWithScores = possibleMoves.map(move => {
-		
-		props.moves[move] = props.player;
-		props.turns = computeRemainingMoves(props.moves)
-		props.player = computeCurrentPlayer(props.turns);
-		const score = computeScores(props);
-
-		if (isMaximizing) {
-			if (score > props.bestScore) {
-				props.bestScore = score;
-				props.move = move;
-			}
-		} else {
-			if (score < props.bestScore) {
-				props.bestScore = score;
-				props.move = move;
-			}
-		}
-		//const data = minimax(props).props;
-		const data = {
-			player: props.player,
-			move,
-			score,
-			minimaxScore: minimax(props).props.bestScore,
-			//minimax:  ,
-			//minimax: minimax(props).props,
-			turns: props.turns
-		}
-		
-
-		props.moves[move] = null;
-		props.turns = computeRemainingMoves(props.moves)
-		props.player = computeCurrentPlayer(props.turns);
-		return data;
-	});
-
-	const m = possibleMovesWithScores.sort((a, b) => {
-		return parseInt(a.minimaxScore, 10) - parseInt(b.minimaxScore, 10); 
-	})[0];
-	const bestMove = m && m.move;
-	return {props, possibleMovesWithScores, bestMove};
+  	// AI MOVE
+  	// AI is the maximizing user
+  	divs.forEach((div, index) => {
+  		// if (index === maximizingMove.index) {
+  		if (TicTacToe.aiMoveFirst) {
+	  		if (index === minMove) {
+	  			TicTacToe.move()
+	  			div.innerHTML = TicTacToe.player()
+	  			return
+  			}
+  		} else {
+  			if (index === maxMove) {
+	  			TicTacToe.move()
+	  			div.innerHTML = TicTacToe.player()
+	  			return
+	  		}
+  		}
+  	})
 }
 
+if (TicTacToe.aiMoveFirst) {
+	// AI starts first
+  console.log('ai move first')
+  aiMove()
+}
 
-function computeAIMove(props) {
- 	// create a copy of the board
- 	// Place at the top to escape early
-	const hasWinner = computeWinners(props);
-	if (hasWinner) return false;
+divs.forEach((div) => {
+  div.addEventListener('click', (evt) => {
+  	const current = evt.currentTarget.innerHTML
+  	if (current !== '') {
+  		return
+  	}
 
+  	humanMove(evt.currentTarget)
+  	aiMove()
 
+  	if (isWinningMove(getMoves())) {
+  		console.log(TicTacToe.player() + ' won!')
+  		return
+  	}
+  }, false)
+})
 
-	// Set data for each turn
-	return minimax(props);
+function getMaxFromArray (data) {
+  return data.sort((a, b) => a < b)[0]
+}
+function getMinFromArray (data) {
+  return data.sort((a, b) => a < b)[data.length - 1]
+}
 
-	// if (isHumanTurn) {
-	// 	return computeMax(copy);
-	// } else {
-	// 	return computeMin(copy);
-	// }
- }
+function getMoves () {
+  let str = ''
+  divs.forEach((div) => {
+  	const text = div.innerHTML || '-'
+  	str += text
+  })
+  return str
+}
+
+function getCombinations (data) {
+  const row1 = [data[0], data[1], data[2]].join('')
+  const row2 = [data[3], data[4], data[5]].join('')
+  const row3 = [data[6], data[7], data[8]].join('')
+  const col1 = [data[0], data[3], data[6]].join('')
+  const col2 = [data[1], data[4], data[7]].join('')
+  const col3 = [data[2], data[5], data[8]].join('')
+
+  const dia1 = [data[0], data[4], data[8]].join('')
+  const dia2 = [data[2], data[4], data[6]].join('')
+
+  return [
+  	row1, row2, row3,
+  	col1, col2, col3,
+  	dia1, dia2
+  ]
+}
+
+function generatePossibleMovesForPlayer (player, data) {
+  const nextPlayer = player === 'x' ? 'o' : 'x'
+  return Array(9).fill(0).map((m, i) => {
+    const moves = data.split('')
+    if (moves[i] === '-') {
+      moves[i] = nextPlayer
+    }
+    return moves.join('')
+  })
+}
+
+function isWinningMove (data) {
+  return getCombinations(data).map(computeScore).some(i => Math.abs(i) === 100)
+}
+// totalScore returns the total score
+// for each combinations (rows, columns and diagonals)
+function totalScore (data) {
+  return getCombinations(data).map(computeScore).reduce((a, b) => a + b, 0)
+}
+
+function computeScore (data) {
+  const text = data.replace(/\-/g, '')
+  switch (text) {
+    case 'xxx': return 100
+    case 'xx': return 10
+    case 'x': return 1
+    case 'o': return -1
+    case 'oo': return -10
+    case 'ooo': return -100
+    default: return 0
+  }
+}
