@@ -1,5 +1,5 @@
-const fs = require('fs')
-const q = require('./train.json')
+// const fs = require('fs')
+// const q = require('./train.json')
 class TicTacToe {
   constructor (board) {
     this.board = board || Array(9).fill('.').join('')
@@ -11,13 +11,16 @@ class TicTacToe {
     ]
 
     this.scores = {
-      xxx: -100,
-      xx: -10,
-      x: -1,
-      default: -1,
-      o: 1,
-      oo: 10,
-      ooo: 100
+      // xxx: -100,
+      // xx: -10,
+      // x: -1,
+      // default: -1,
+      // o: 1,
+      // oo: 10,
+      // ooo: 100
+      ooo: 1,
+      xxx: 0,
+      default: 0.5
     }
 
     this.x = 'x'
@@ -55,7 +58,7 @@ class TicTacToe {
   }
   train () {
     // Create a new board
-    const episodes = 100
+    const episodes = 10000
     Array(episodes).fill(0).forEach(() => {
       let board = this.clone(this.board)
       let count = 0
@@ -63,57 +66,75 @@ class TicTacToe {
         if (!this.q[board]) {
           this.q[board] = {}
         }
+        const player = count % 2 === 0 ? this.x : this.o
         const possibleXMoves = this.checkPossibleMoves(board)
         if (!possibleXMoves.length) break
-        const moveX = Math.floor(Math.random() * possibleXMoves.length)
-        let newBoardX = this.move(board, this.x, possibleXMoves[moveX])
-        count += 1
+        const move = Math.floor(Math.random() * possibleXMoves.length)
+        let newBoard = this.move(board, player, possibleXMoves[move])
 
-        const possibleYMoves = this.checkPossibleMoves(newBoardX)
-        if (!possibleYMoves.length) break
-        const moveY = Math.floor(Math.random() * possibleYMoves.length)
-        let newBoardY = this.move(newBoardX, this.o, possibleYMoves[moveY])
-        count += 1
-
-        if (!this.q[newBoardX]) {
-          this.q[newBoardX] = {}
+        if (!this.q[newBoard]) {
+          this.q[newBoard] = {}
         }
-        if (!this.q[newBoardY]) {
-          this.q[newBoardY] = {}
-        }
-        const futureActions = Object.values(this.q[newBoardY])
-        const maxScore = futureActions.length ? Math.max(...futureActions) : this.computeScore(newBoardY)
+        const futureActions = Object.values(this.q[newBoard])
+        const maxScore = futureActions.length ? Math.max(...futureActions) : this.computeScore(newBoard)
         // console.log('maxScore', maxScore, futureActions, this.q[newBoardY], newBoardY)
-        const score = this.computeScore(newBoardX)
-        this.q[newBoardX][newBoardY] = score + 0.8 * maxScore
-        board = newBoardY
+        const score = this.computeScore(newBoard)
+        this.q[board][newBoard] = score + 0.8 * maxScore
+        count += 1
+        board = newBoard
       }
+
       console.log('end', board)
     })
 
-    fs.writeFile('train.json', JSON.stringify(this.q), 'utf-8', (error, ok) => {
-      if (error) {
-        throw error
-      }
-      console.log('done')
-    })
+    // fs.writeFile('train.json', JSON.stringify(this.q), 'utf-8', (error, ok) => {
+    //   if (error) {
+    //     throw error
+    //   }
+    //   console.log('done')
+    // })
   }
 }
 
-const ticTacToe = new TicTacToe()
+function main () {
+  const ticTacToe = new TicTacToe()
 
-ticTacToe.train()
+// ticTacToe.train()
+  const $board = document.getElementById('tictactoe')
+  const $cells = $board.querySelectorAll('div')
 
-try {
-  const move = predict('.xxoxo..o')
-  console.log(move)
-} catch (error) {
-  console.log(error.message)
+  const getBoardState = $cells => {
+    let board = ''
+    $cells.forEach($cell => {
+      board += $cell.textContent ? $cell.textContent : '.'
+    })
+    return board
+  }
+  $cells.forEach(($cell, i) => {
+    $cell.addEventListener('click', (evt) => {
+      $cell.innerHTML = 'x'
+      try {
+        const original = getBoardState($cells)
+        const move = predict(original)
+        console.log(move)
+        for (let i = 0; i < original.length; i += 1) {
+          if (move[i] !== original[i]) {
+            console.log(i)
+            $cells[i].innerHTML = 'o'
+          }
+        }
+      } catch (error) {
+        console.log(error.message)
+      }
+      function predict (move) {
+        // const q = require('./train.json')
+        const possibilities = q[move]
+        return Object.entries(possibilities).find(([ key, value ]) => {
+          return value === Math.max(...Object.values(possibilities))
+        })[0]
+      }
+    }, false)
+  })
 }
-function predict (move) {
-  const q = require('./train.json')
-  const possibilities = q[move]
-  return Object.entries(possibilities).find(([ key, value ]) => {
-    return value === Math.max(...Object.values(possibilities))
-  })[0]
-}
+
+main()
