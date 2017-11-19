@@ -43,58 +43,50 @@ function checkBoardScore (board) {
   }).reduce((a, b) => a + b, 0)
 }
 function checkScore (score = 0, depth, isMaximizing) {
-  return isMaximizing ? score - depth : depth + score
+  return isMaximizing ? score - depth : score + depth
 }
 
 function checkPlayer (isMaximizing) {
   return isMaximizing ? 'x' : 'o'
 }
 
-function minimax (board, depth, isMaximizing) {
-  if (checkWin(board, checkPlayer(isMaximizing))) {
+function minimax (alpha = -Infinity, beta = Infinity, board, depth, isMaximizing) {
+  if (checkWin(board, checkPlayer(isMaximizing)) || depth === 0) {
     return [checkScore(checkBoardScore(board), depth, isMaximizing), null]
   }
   let bestScore = isMaximizing ? -Infinity : +Infinity
   let bestMove = -1
-  checkPossibleMoves(board).forEach((move) => {
+  const moves = checkPossibleMoves(board).map((move) => {
     const newBoard = movePlayer(board, move, isMaximizing)
-    const [newScore] = minimax(newBoard, depth - 1, isMaximizing)
+    const [ minScore ] = minimax(alpha, beta, newBoard, depth - 1, !isMaximizing)
+    const [ maxScore ] = minimax(alpha, beta, newBoard, depth - 1, isMaximizing)
 
     if (isMaximizing) {
-      bestMove = newScore > bestScore ? move : bestMove
-      bestScore = Math.max(bestScore, newScore)
+      if (maxScore > bestScore && maxScore > alpha) {
+        bestMove = move
+        bestScore = maxScore
+        alpha = maxScore
+      }
     } else {
-      bestMove = newScore < bestScore ? move : bestMove
-      bestScore = Math.min(bestScore, newScore)
+      if (minScore < bestScore && minScore < beta) {
+        bestMove = move
+        bestScore = minScore
+        beta = minScore
+      }
+      if (alpha >= beta) {
+
+      }
     }
+    return [bestMove, bestScore, minScore, maxScore]
   })
+
+  if (!moves.length) {
+    const minScore = checkScore(checkBoardScore(board), depth, !isMaximizing)
+    const maxScore = checkScore(checkBoardScore(board), depth, isMaximizing)
+    return [isMaximizing ? maxScore : minScore, 0]
+  }
   return [ bestScore, bestMove ]
 }
-
-// function minimax (board, depth, isMaximizing) {
-//   let bestScore = isMaximizing ? -Infinity : +Infinity
-//   let bestMove = -1
-//   const out = checkPossibleMoves(board).map((move) => {
-//     const newBoard = movePlayer(board, move, isMaximizing)
-//     const score = checkScore(checkBoardScore(newBoard), depth, isMaximizing)
-//     if (isMaximizing) {
-//       if (score > bestScore) {
-//         bestScore = score
-//         bestMove = move
-//       }
-//     } else {
-//       if (score < bestScore) {
-//         bestScore = score
-//         bestMove = move
-//       }
-//     }
-
-//     return [move, score]
-//   })
-//   console.log('out', out)
-
-//   return [ bestScore, bestMove ]
-// }
 
 function movePlayer (board, position = -1, isMaximizing) {
   const moves = board.split('')
@@ -132,7 +124,7 @@ function main () {
 
 function computeGame (board) {
   const depth = 9 - board.split('').filter(pattern => pattern === '.').length
-  const [ score, move ] = minimax(board, depth, false)
+  const [ score, move ] = minimax(-Infinity, +Infinity, board, depth, false)
   console.log(`score=${score} move=${move}`)
   return move
 }
