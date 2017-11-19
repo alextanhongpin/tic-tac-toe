@@ -7,83 +7,73 @@ const TicTacToe = {
     return this.counter % 2 == 0 ? 'x' : 'o'
   },
   move () {
-  	this.counter += 1
+    this.counter += 1
   },
   aiMoveFirst: Math.random() < 0.5
 }
 
 function humanMove (el) {
-	 // Make a move
-  	if (isWinningMove(getMoves())) {
-  		console.log(TicTacToe.player() + ' won!')
-  		return
-  	}
-  	TicTacToe.move()
-  	el.innerHTML = TicTacToe.player()
+// Make a move
+  if (isWinningMove(getMoves())) {
+    console.log(TicTacToe.player() + ' won!')
+    return
+  }
+  TicTacToe.move()
+  el.innerHTML = TicTacToe.player()
 }
 
 function aiMove () {
-  	const { scores, moves } = generatePossibleMovesForPlayer(TicTacToe.player(), getMoves())
+  const { scores, moves } = generatePossibleMovesForPlayer(TicTacToe.player(), getMoves())
 
-  	// They might have the same scores but it is occupied
-  	const maxMove = moves[scores.findIndex(i => i === Math.max(...scores))]
-  	const minMove = moves[scores.findIndex(i => i === Math.min(...scores))]
+// They might have the same scores but it is occupied
+  const maxMove = moves[scores.findIndex(i => i === Math.max(...scores))]
+  const minMove = moves[scores.findIndex(i => i === Math.min(...scores))]
 
-  	// AI MOVE
-  	// AI is the maximizing user
-  	divs.forEach((div, index) => {
-  		// if (index === maximizingMove.index) {
-  		if (TicTacToe.aiMoveFirst) {
-	  		if (index === minMove) {
-	  			TicTacToe.move()
-	  			div.innerHTML = TicTacToe.player()
-	  			return
-  			}
-  		} else {
-  			if (index === maxMove) {
-	  			TicTacToe.move()
-	  			div.innerHTML = TicTacToe.player()
-	  			return
-	  		}
-  		}
-  	})
+// AI MOVE
+// AI is the maximizing user
+  divs.forEach((div, index) => {
+// if (index === maximizingMove.index) {
+    if (TicTacToe.aiMoveFirst) {
+      if (index === minMove) {
+        TicTacToe.move()
+        div.innerHTML = TicTacToe.player()
+      }
+    } else {
+      if (index === maxMove) {
+        TicTacToe.move()
+        div.innerHTML = TicTacToe.player()
+      }
+    }
+  })
 }
 
 if (TicTacToe.aiMoveFirst) {
-	// AI starts first
+// AI starts first
   console.log('ai move first')
   aiMove()
 }
 
 divs.forEach((div) => {
   div.addEventListener('click', (evt) => {
-  	const current = evt.currentTarget.innerHTML
-  	if (current !== '') {
-  		return
-  	}
+    const current = evt.currentTarget.innerHTML
+    if (current !== '') {
+      return
+    }
 
-  	humanMove(evt.currentTarget)
-  	aiMove()
+    humanMove(evt.currentTarget)
+    aiMove()
 
-  	if (isWinningMove(getMoves())) {
-  		console.log(TicTacToe.player() + ' won!')
-  		return
-  	}
+    if (isWinningMove(getMoves())) {
+      console.log(TicTacToe.player() + ' won!')
+    }
   }, false)
 })
-
-function getMaxFromArray (data) {
-  return data.sort((a, b) => a < b)[0]
-}
-function getMinFromArray (data) {
-  return data.sort((a, b) => a < b)[data.length - 1]
-}
 
 function getMoves () {
   let str = ''
   divs.forEach((div) => {
-  	const text = div.innerHTML || '-'
-  	str += text
+    const text = div.innerHTML || '-'
+    str += text
   })
   return str
 }
@@ -100,9 +90,9 @@ function getCombinations (data) {
   const dia2 = [data[2], data[4], data[6]].join('')
 
   return [
-  	row1, row2, row3,
-  	col1, col2, col3,
-  	dia1, dia2
+    row1, row2, row3,
+    col1, col2, col3,
+    dia1, dia2
   ]
 }
 
@@ -119,8 +109,8 @@ function generatePossibleMovesForPlayer (player, data) {
     }
   })
   return {
-  	moves: possibleMoves,
-  	scores: possibleCombinations
+    moves: possibleMoves,
+    scores: possibleCombinations
   }
 }
 
