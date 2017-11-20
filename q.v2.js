@@ -94,7 +94,8 @@ class TicTacToe {
     this.epsilon = 0.1 // Epsilon value to balance exploration/exploitation
     this.turn = 0
   }
-  move (board, player, move) {
+  // TODO: Implement move
+  getMove (board, player) {
     if (Math.random() < this.episilon) {
       // Explore: Make a random move
       const possibleMoves = checkPossibleMoves(board)
@@ -103,11 +104,22 @@ class TicTacToe {
     // Exploit: Take the move with the highest scores
     return 0
   }
+  alternatePlayer (turn) {
+    return this.turn % 2 === 0 ? Player.X() : Player.O()
+  }
   train () {
     // throw new Error('not implemented')
     Array(this.episodes).fill(0).forEach(_ => {
-      while (!this.checkWin(this.board) && this.turn < 9) {
-        // 
+      // Reset the board to the initial state each time
+      let board = this.clone(this.board)
+      // const initialState =
+      while (!this.checkWin(board) && this.turn < 9) {
+        const player = this.alternatePlayer(this.turn)
+        const bestMove = this.getMove(board, player)
+        const finalBoard = movePlayer(board, bestMove, player)
+        const finalScore = computeTotalScore(finalBoard)
+        // this.q[]
+
         this.turn += 1
       }
     })
