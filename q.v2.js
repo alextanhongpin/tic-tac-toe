@@ -118,8 +118,8 @@ class TicTacToe {
         const bestMove = this.getMove(board, player)
         const finalBoard = movePlayer(board, bestMove, player)
         const finalScore = computeTotalScore(finalBoard)
-        // this.q[]
-
+        // Future score?
+        // this.q[board][finalBoard] = finalScore + this.alpha * 1
         this.turn += 1
       }
     })
