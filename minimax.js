@@ -1,137 +1,132 @@
 
-const app = document.getElementById('tictactoe')
-const divs = app.querySelectorAll('div')
-const TicTacToe = {
-  counter: 0,
-  player () {
-    return this.counter % 2 == 0 ? 'x' : 'o'
-  },
-  move () {
-    this.counter += 1
-  },
-  aiMoveFirst: Math.random() < 0.5
+function checkWin (board, player) {
+  const winningPattern = Array(3).fill(player).join('')
+
+  const combinations = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
+  return combinations.map(patterns => patterns.map(pattern => board[pattern]).join(''))
+  .some(pattern => pattern === winningPattern)
 }
 
-function humanMove (el) {
-// Make a move
-  if (isWinningMove(getMoves())) {
-    console.log(TicTacToe.player() + ' won!')
-    return
+function checkBoardScore (board) {
+  const combinations = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
+  const scores = {
+    xxx: 100,
+    ooo: -100,
+    xx: 10,
+    x: 1,
+    oo: -10,
+    o: -1,
+    default: 0
   }
-  TicTacToe.move()
-  el.innerHTML = TicTacToe.player()
+  return combinations.map(patterns => patterns.map(pattern => board[pattern]).join(''))
+  .map(board => board.split('').filter(cell => cell !== '.').join(''))
+  .map(board => {
+    return scores[board] !== undefined ? scores[board] : scores['default']
+  }).reduce((a, b) => a + b, 0)
+}
+function checkScore (score = 0, depth, isMaximizing) {
+  return isMaximizing ? score - depth : score + depth
 }
 
-function aiMove () {
-  const { scores, moves } = generatePossibleMovesForPlayer(TicTacToe.player(), getMoves())
+function checkPlayer (isMaximizing) {
+  return isMaximizing ? 'x' : 'o'
+}
 
-// They might have the same scores but it is occupied
-  const maxMove = moves[scores.findIndex(i => i === Math.max(...scores))]
-  const minMove = moves[scores.findIndex(i => i === Math.min(...scores))]
+function minimax (alpha = -Infinity, beta = Infinity, board, depth, isMaximizing) {
+  if (checkWin(board, checkPlayer(isMaximizing)) || depth === 0) {
+    return [checkScore(checkBoardScore(board), depth, isMaximizing), null]
+  }
+  let bestScore = isMaximizing ? -Infinity : +Infinity
+  let bestMove = -1
+  const moves = checkPossibleMoves(board).map((move) => {
+    const newBoard = movePlayer(board, move, isMaximizing)
+    const [ minScore ] = minimax(alpha, beta, newBoard, depth - 1, !isMaximizing)
+    const [ maxScore ] = minimax(alpha, beta, newBoard, depth - 1, isMaximizing)
 
-// AI MOVE
-// AI is the maximizing user
-  divs.forEach((div, index) => {
-// if (index === maximizingMove.index) {
-    if (TicTacToe.aiMoveFirst) {
-      if (index === minMove) {
-        TicTacToe.move()
-        div.innerHTML = TicTacToe.player()
+    if (isMaximizing) {
+      if (maxScore > bestScore && maxScore > alpha) {
+        bestMove = move
+        bestScore = maxScore
+        alpha = maxScore
       }
     } else {
-      if (index === maxMove) {
-        TicTacToe.move()
-        div.innerHTML = TicTacToe.player()
+      if (minScore < bestScore && minScore < beta) {
+        bestMove = move
+        bestScore = minScore
+        beta = minScore
+      }
+      if (alpha >= beta) {
+
       }
     }
+    return [bestMove, bestScore, minScore, maxScore]
   })
-}
 
-if (TicTacToe.aiMoveFirst) {
-// AI starts first
-  console.log('ai move first')
-  aiMove()
-}
-
-divs.forEach((div) => {
-  div.addEventListener('click', (evt) => {
-    const current = evt.currentTarget.innerHTML
-    if (current !== '') {
-      return
-    }
-
-    humanMove(evt.currentTarget)
-    aiMove()
-
-    if (isWinningMove(getMoves())) {
-      console.log(TicTacToe.player() + ' won!')
-    }
-  }, false)
-})
-
-function getMoves () {
-  let str = ''
-  divs.forEach((div) => {
-    const text = div.innerHTML || '-'
-    str += text
-  })
-  return str
-}
-
-function getCombinations (data) {
-  const row1 = [data[0], data[1], data[2]].join('')
-  const row2 = [data[3], data[4], data[5]].join('')
-  const row3 = [data[6], data[7], data[8]].join('')
-  const col1 = [data[0], data[3], data[6]].join('')
-  const col2 = [data[1], data[4], data[7]].join('')
-  const col3 = [data[2], data[5], data[8]].join('')
-
-  const dia1 = [data[0], data[4], data[8]].join('')
-  const dia2 = [data[2], data[4], data[6]].join('')
-
-  return [
-    row1, row2, row3,
-    col1, col2, col3,
-    dia1, dia2
-  ]
-}
-
-function generatePossibleMovesForPlayer (player, data) {
-  const nextPlayer = player === 'x' ? 'o' : 'x'
-  let possibleMoves = []
-  let possibleCombinations = []
-  Array(9).fill(0).forEach((m, i) => {
-    const moves = data.split('')
-    if (moves[i] === '-') {
-      moves[i] = nextPlayer
-      possibleMoves.push(i)
-      possibleCombinations.push(totalScore(moves.join('')))
-    }
-  })
-  return {
-    moves: possibleMoves,
-    scores: possibleCombinations
+  if (!moves.length) {
+    const minScore = checkScore(checkBoardScore(board), depth, !isMaximizing)
+    const maxScore = checkScore(checkBoardScore(board), depth, isMaximizing)
+    return [isMaximizing ? maxScore : minScore, 0]
   }
+  return [ bestScore, bestMove ]
 }
 
-function isWinningMove (data) {
-  return getCombinations(data).map(computeScore).some(i => Math.abs(i) === 100)
-}
-// totalScore returns the total score
-// for each combinations (rows, columns and diagonals)
-function totalScore (data) {
-  return getCombinations(data).map(computeScore).reduce((a, b) => a + b, 0)
+function movePlayer (board, position = -1, isMaximizing) {
+  const moves = board.split('')
+  moves[position] = checkPlayer(isMaximizing)
+  return moves.join('')
 }
 
-function computeScore (data) {
-  const text = data.replace(/\-/g, '')
-  switch (text) {
-    case 'xxx': return 100
-    case 'xx': return 10
-    case 'x': return 1
-    case 'o': return -1
-    case 'oo': return -10
-    case 'ooo': return -100
-    default: return 0
+function checkPossibleMoves (board) {
+  return board.split('').map((move, i) => move === '.' ? i : null)
+  .filter(nonNull => nonNull !== null)
+}
+
+function main () {
+  const $board = document.getElementById('tictactoe')
+  const $cells = $board.querySelectorAll('div')
+
+  const getBoardState = $cells => {
+    let board = ''
+    $cells.forEach($cell => {
+      board += $cell.textContent ? $cell.textContent : '.'
+    })
+    return board
   }
+  $cells.forEach(($cell, i) => {
+    $cell.addEventListener('click', (evt) => {
+      $cell.innerHTML = 'x'
+
+      console.log('getBoardState($cells)', getBoardState($cells))
+      const indexOfBestMove = computeGame(getBoardState($cells))
+      console.log(indexOfBestMove)
+      $cells[indexOfBestMove].innerHTML = 'o'
+    }, false)
+  })
 }
+
+function computeGame (board) {
+  const depth = 9 - board.split('').filter(pattern => pattern === '.').length
+  const [ score, move ] = minimax(-Infinity, +Infinity, board, depth, false)
+  console.log(`score=${score} move=${move}`)
+  return move
+}
+
+main()
