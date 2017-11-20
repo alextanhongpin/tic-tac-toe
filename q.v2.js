@@ -92,6 +92,7 @@ class TicTacToe {
     this.episodes = 1000 // Number of training
     this.alpha = 0.8 // Our rate of learning
     this.epsilon = 0.1 // Epsilon value to balance exploration/exploitation
+    this.turn = 0
   }
   move (board, player, move) {
     if (Math.random() < this.episilon) {
@@ -103,7 +104,13 @@ class TicTacToe {
     return 0
   }
   train () {
-    throw new Error('not implemented')
+    // throw new Error('not implemented')
+    Array(this.episodes).fill(0).forEach(_ => {
+      while (!this.checkWin(this.board) && this.turn < 9) {
+        // 
+        this.turn += 1
+      }
+    })
   }
   predict (move) {
     throw new Error('not implemented')
