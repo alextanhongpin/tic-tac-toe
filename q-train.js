@@ -110,28 +110,26 @@ class TicTacToe {
     return this.turn % 2 === 0 ? Player.X() : Player.O()
   }
   train () {
-    // throw new Error('not implemented')
     Array(this.episodes).fill(0).forEach(_ => {
       // Reset the board to the initial state each time
       this.turn = 0
       let board = cloneBoard(this.board)
-      // const initialState =
       while (!checkWin(board) && this.turn < 9) {
         const player = this.alternatePlayer(this.turn)
         const bestMove = this.getMove(board, player)
         const finalBoard = movePlayer(board, bestMove, player)
         const finalScore = computeTotalScore(finalBoard)
-        // Future score?
-
-        // if (checkWin(finalBoard)) {
         const futureScores = Object.values(this.q[finalBoard] ? this.q[finalBoard] : {})
+
+        // Minimize the user's score if it is X (player) and maximize it if it is O (AI)
         const maxFutureScore = futureScores.length ? player === 'x' ? Math.min(...futureScores) : Math.max(...futureScores) : 0
         if (!this.q[board]) {
           this.q[board] = {}
           this.q[board][finalBoard] = {}
         }
+
+        // Our Q-learning agent
         this.q[board][finalBoard] = finalScore + this.alpha * maxFutureScore
-        // }
         this.turn += 1
         board = finalBoard
       }
@@ -145,7 +143,7 @@ class TicTacToe {
     })
   }
   predict (move) {
-    console.log('moves', this.q[move])
+    console.log('possible moves', this.q[move])
     const scores = Object.values(this.q[move])
     const moves = Object.entries(this.q[move])
     const minPlayerScore = Math.min(...scores)
@@ -153,14 +151,6 @@ class TicTacToe {
     return move.split('').map((m, i) => {
       return m === bestMove[i] ? null : i
     }).filter(nonNull => nonNull !== null)[0]
-  }
-  // Load the model trained
-  load () {
-    throw new Error('not implemented')
-  }
-  // Save the model trained
-  save () {
-    throw new Error('not implemented')
   }
 }
 
