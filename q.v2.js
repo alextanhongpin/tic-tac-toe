@@ -63,8 +63,8 @@ function checkWin (board, player) {
 function movePlayer (board, move, player) {
   const clonedBoard = cloneBoard(board)
   // To be implemented
-  cloneBoard.split('')[move] = player
-  return cloneBoard.join('')
+  clonedBoard.split('')[move] = player
+  return clonedBoard.join('')
 }
 
 // // minimax returns the best move with the highest score for the different possible
@@ -95,10 +95,11 @@ class TicTacToe {
   }
   move (board, player, move) {
     if (Math.random() < this.episilon) {
-      // Explore
-
+      // Explore: Make a random move
+      const possibleMoves = checkPossibleMoves(board)
+      return possibleMoves[Math.floor(Math.random() * possibleMoves.length)]
     }
-    // Exploit
+    // Exploit: Take the move with the highest scores
     return 0
   }
   train () {
@@ -107,9 +108,19 @@ class TicTacToe {
   predict (move) {
     throw new Error('not implemented')
   }
+  // Load the model trained
+  load () {
+    throw new Error('not implemented')
+  }
+  // Save the model trained
+  save () {
+    throw new Error('not implemented')
+  }
 }
 
 // main is our program
 function main () {
 // const ticTacToe = new TicTacToe({ q, board, episodes })
+// ticTacToe.train()
+// const move = ticTacToe.predict('x........')
 }
