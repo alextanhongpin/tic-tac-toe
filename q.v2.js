@@ -44,7 +44,7 @@ function computeRowScore (row) {
 // checkPossibleMoves returns an array of moves that is possible for the players
 function checkPossibleMoves (board) {
   const cells = board.split('')
-  const mapEmptyCellToPosition = (cell, i) => cell === '.' ? i : null
+  const mapEmptyCellToPosition = (cell, i) => cell === Player.Empty ? i : null
   const filterNonNull = (value) => value !== null
   return cells.map(mapEmptyCellToPosition).filter(filterNonNull)
 }
@@ -63,8 +63,53 @@ function checkWin (board, player) {
 function movePlayer (board, move, player) {
   const clonedBoard = cloneBoard(board)
   // To be implemented
+  cloneBoard.split('')[move] = player
+  return cloneBoard.join('')
 }
 
-function minimax () {
+// // minimax returns the best move with the highest score for the different possible
+// // moves that are available
+// function minimax () {
+//   // TODO: Handle draw conditions
+// }
 
+class Player {
+  static Empty () {
+    return '.'
+  }
+  static X () {
+    return 'x'
+  }
+  static O () {
+    return 'o'
+  }
+}
+
+class TicTacToe {
+  constructor ({q = {}, board = Array(9).fill(Player.Empty)}) {
+    this.q = q // Our training model, can be loaded from a file
+    this.board = board// The board initial state
+    this.episodes = 1000 // Number of training
+    this.alpha = 0.8 // Our rate of learning
+    this.epsilon = 0.1 // Epsilon value to balance exploration/exploitation
+  }
+  move (board, player, move) {
+    if (Math.random() < this.episilon) {
+      // Explore
+
+    }
+    // Exploit
+    return 0
+  }
+  train () {
+    throw new Error('not implemented')
+  }
+  predict (move) {
+    throw new Error('not implemented')
+  }
+}
+
+// main is our program
+function main () {
+// const ticTacToe = new TicTacToe({ q, board, episodes })
 }
