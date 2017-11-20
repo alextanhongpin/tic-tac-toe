@@ -10,15 +10,18 @@ const combinations = [
 ]
 
 // sum returns the sum of an array
-function sum (x) {
-  return x.reduce((a, b) => a + b, 0)
-}
+const sum = (x) => x.reduce((a, b) => a + b, 0)
 
 // computeTotalScore returns the total score for each row of the board
 function computeTotalScore (board) {
-  const scores = combinations.map(rows => rows.map(cell => board[cell]).join('')).map(computeRowScore)
+  const mapCellToRow = cell => board[cell]
+  const mapRowsToCombination = rows => rows.map(mapCellToRow).join('')
+  const scores = combinations.map(mapRowsToCombination).map(computeRowScore)
   return sum(scores)
 }
+
+// cloneBoard returns a new board at the present state
+const cloneBoard = (board) => [...board.split('')].join('')
 
 // computeRowScore returns the score for a particular row
 function computeRowScore (row) {
@@ -40,23 +43,26 @@ function computeRowScore (row) {
 
 // checkPossibleMoves returns an array of moves that is possible for the players
 function checkPossibleMoves (board) {
-  return board.split('')
-  .map((cell, i) => {
-    return cell !== '.' ? i : null
-  })
-  .filter((nonNull) => nonNull !== null)
+  const cells = board.split('')
+  const mapEmptyCellToPosition = (cell, i) => cell === '.' ? i : null
+  const filterNonNull = (value) => value !== null
+  return cells.map(mapEmptyCellToPosition).filter(filterNonNull)
 }
 
 // checkWin returns true if any of the rows/columns/diagonals combinations
 // contains a set of three x's or o's
 function checkWin (board, player) {
-  const patterns = combinations.map(combination => combination.map(cell => board[cell].join('')))
-  return patterns.some(pattern => pattern === Array(3).fill(player).join(''))
+  const winningPattern = Array(3).fill(player).join('')
+  const mapCellToRow = cell => board[cell].join('')
+  const mapCombinationsToRow = combination => combination.map(mapCellToRow)
+  const isWinningPattern = pattern => pattern === winningPattern
+  return combinations.map(mapCombinationsToRow).some(isWinningPattern)
 }
 
-// cloneBoard returns a new board at the present state
-function cloneBoard (board) {
-  return [...board.split('')].join('')
+// movePlayer returns a new board state with the players moved
+function movePlayer (board, move, player) {
+  const clonedBoard = cloneBoard(board)
+  // To be implemented
 }
 
 function minimax () {
