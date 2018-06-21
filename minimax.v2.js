@@ -15,6 +15,9 @@ let combinations = [
   [2, 4, 6]
 ]
 
+let checkHumanWin = gameOver(HUMAN)
+let checkEnemyWin = gameOver(ENEMY)
+
 function gameOver (player) {
   return function (board) {
     for (let i = 0, len = combinations.length; i < len; i += 1) {
@@ -29,37 +32,32 @@ function gameOver (player) {
 }
 
 function minimax (board, depth, player, alpha = -Infinity, beta = Infinity) {
-  if (gameOver(HUMAN)(board)) {
-    return [10 - depth, -1]
-  }
+  let isMaximizing = player === HUMAN
 
-  if (gameOver(ENEMY)(board)) {
-    return [depth - 10, -1]
-  }
-
-  let scores = []
   let moves = []
+  let scores = []
+
+  if (checkHumanWin(board)) return [10 - depth, -1]
+  if (checkEnemyWin(board)) return [depth - 10, -1]
 
   for (let i = 0, len = board.length; i < len; i += 1) {
-    if (board[i] === '') {
-      board[i] = player
-      let [bestScore] = minimax(board, depth + 1, player === HUMAN ? ENEMY : HUMAN, alpha, beta)
-      scores.push(bestScore)
-      moves.push(i)
-      board[i] = ''
+    if (!(board[i] === '')) continue
 
-      // Maximizing player
-      if (player === HUMAN) {
-        alpha = bestScore > alpha ? bestScore : alpha
-        if (alpha >= beta) break // beta cut-off
-      } else {
-        beta = bestScore < beta ? bestScore : beta
-        if (alpha >= beta) break // alpha cut-off
-      }
+    board[i] = player
+    let [score] = minimax(board, depth + 1, player === HUMAN ? ENEMY : HUMAN, alpha, beta)
+    scores.push(score)
+    moves.push(i)
+    board[i] = ''
+
+    if (isMaximizing) {
+      alpha = score > alpha ? score : alpha // beta cut-off
+    } else {
+      beta = score < beta ? score : beta // alpha cut-off
     }
+    if (alpha >= beta) break
   }
 
-  let bestScore = player === HUMAN
+  let bestScore = isMaximizing
     ? Math.max(...scores)
     : Math.min(...scores)
   let bestMove = moves[scores.indexOf(bestScore)]
@@ -69,30 +67,30 @@ function minimax (board, depth, player, alpha = -Infinity, beta = Infinity) {
 (function main () {
   let board = Array(9).fill('')
   let depth = 0
-  let cells = document.querySelectorAll('#tictactoe > div')
+  let $cells = document.querySelectorAll('#tictactoe > div')
   let human = HUMAN
   let enemy = ENEMY
 
   if (!isPlayerFirst) {
     // Enemy move
-    let [_, bestMove] = minimax(board, depth, enemy)
-    depth++
-    cells[bestMove].innerHTML = board[bestMove] = enemy
+    let [, bestMove] = minimax(board, depth, enemy)
+    depth += 1
+    $cells[bestMove].innerHTML = board[bestMove] = enemy
   }
 
-  cells.forEach((element, index) => {
-    element.addEventListener('click', (evt) => {
+  $cells.forEach(($element, index) => {
+    $element.addEventListener('click', (evt) => {
       let text = evt.currentTarget.innerHTML
       if (!text.trim().length) {
         // Player move
-        depth++
+        depth += 1
         evt.currentTarget.innerHTML = board[index] = human
 
         console.time('minmax')
         // Enemy move
-        let [_, bestMove] = minimax(board, depth, enemy)
-        depth++
-        cells[bestMove].innerHTML = board[bestMove] = enemy
+        let [, bestMove] = minimax(board, depth, enemy)
+        depth += 1
+        $cells[bestMove].innerHTML = board[bestMove] = enemy
         console.timeEnd('minmax')
       }
     }, false)
