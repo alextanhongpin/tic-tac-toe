@@ -1,3 +1,4 @@
+// This implementation is incorrect. See minimax.v2.js
 
 function checkWin (board, player) {
   const winningPattern = Array(3).fill(player).join('')
@@ -12,8 +13,9 @@ function checkWin (board, player) {
     [0, 4, 8],
     [2, 4, 6]
   ]
-  return combinations.map(patterns => patterns.map(pattern => board[pattern]).join(''))
-  .some(pattern => pattern === winningPattern)
+  return combinations
+    .map(patterns => patterns.map(pattern => board[pattern]).join(''))
+    .some(pattern => pattern === winningPattern)
 }
 
 function checkBoardScore (board) {
@@ -37,10 +39,10 @@ function checkBoardScore (board) {
     default: 0
   }
   return combinations.map(patterns => patterns.map(pattern => board[pattern]).join(''))
-  .map(board => board.split('').filter(cell => cell !== '.').join(''))
-  .map(board => {
-    return scores[board] !== undefined ? scores[board] : scores['default']
-  }).reduce((a, b) => a + b, 0)
+    .map(board => board.split('').filter(cell => cell !== '.').join(''))
+    .map(board => {
+      return scores[board] !== undefined ? scores[board] : scores['default']
+    }).reduce((a, b) => a + b, 0)
 }
 function checkScore (score = 0, depth, isMaximizing) {
   return isMaximizing ? score - depth : score + depth
@@ -96,7 +98,7 @@ function movePlayer (board, position = -1, isMaximizing) {
 
 function checkPossibleMoves (board) {
   return board.split('').map((move, i) => move === '.' ? i : null)
-  .filter(nonNull => nonNull !== null)
+    .filter(nonNull => nonNull !== null)
 }
 
 function main () {
