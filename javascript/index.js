@@ -91,6 +91,7 @@ function mapScores (pattern) {
 
 function minimax (state = [], depth = 9, maximizingPlayer) {
   if (depth === 0 || gameOver(state)) {
+    // TODO: Minus depth here, and change the scoring options to simplify it
     return [checkScore(state), -1]
   }
 
