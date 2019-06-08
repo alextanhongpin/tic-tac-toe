@@ -1,0 +1,13 @@
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+}
+
+.cell {
+    line-height: 80px;
+    font-size: 40px;
+    vertical-align: middle;
+    text-align: center;
+    border: 1px solid black;
+}
