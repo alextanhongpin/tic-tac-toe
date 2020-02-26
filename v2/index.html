@@ -1,15 +1,53 @@
-<script type='module' src='./index.js'></script>
-<link rel='stylesheet' type='text/css' href='./index.css' />
-<div>
-    <div id='tic-tac-toe'>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
-        <div class='cell'></div>
+<style>
+    *,
+    *:before,
+    *:after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    #app {
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #tic-tac-toe {
+        display: grid;
+        grid-template-columns: repeat(3, 80px);
+        grid-auto-rows: 1fr;
+    }
+
+    .cell {
+        border: 1px solid #333;
+        height: 80px;
+        font-size: 36px;
+        text-align: center;
+        line-height: 80px;
+    }
+</style>
+<script src='./index.js'></script>
+
+<div id='app'>
+    <div>
+        <div id='message'>
+            Message
+        </div>
+        <div id='tic-tac-toe'>
+            <div class='cell'></div>
+            <div class='cell'></div>
+            <div class='cell'></div>
+
+            <div class='cell'></div>
+            <div class='cell'></div>
+            <div class='cell'></div>
+
+            <div class='cell'></div>
+            <div class='cell'></div>
+            <div class='cell'></div>
+        </div>
     </div>
 </div>

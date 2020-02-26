@@ -126,70 +126,10 @@ const alphaBeta = (
   return bestMove
 }
 
-window.onload = () => {
-  const $cells = document.querySelectorAll('.cell')
-  const $message = document.getElementById('message')
-
-  const board = makeBoard()
-  let round = 0
-  const algo = alphaBeta // minimax
-  const enemyFirst = false
-
-  if (enemyFirst) {
-    // Enemy move.
-    const { move } = algo(board, round, false)
-    board[move] = moves.O
-    $cells[move].innerText = moves.O
-    round += 1
-    $message.innerText = 'Computer starts first'
-  } else {
-    $message.innerText = 'Your start first'
-  }
-
-  const updateMessage = board => {
-    const { isDraw, humanWin, enemyWin } = checkGameState(board)
-    if (isDraw) {
-      $message.innerText = 'Game Draw'
-      return true
-    }
-    if (humanWin) {
-      $message.innerText = 'You Win'
-      return true
-    }
-
-    if (enemyWin) {
-      $message.innerText = 'Computer Win'
-      return true
-    }
-    return false
-  }
-
-  $cells.forEach(($cell, i) =>
-    (pos => {
-      $cell.addEventListener(
-        'click',
-        evt => {
-          const { isDraw, isWon } = checkGameState(board)
-          if (isDraw || isWon) return
-          if (board[pos] !== moves.None) return
-
-          // Player move.
-          board[pos] = moves.X
-          $cell.innerText = moves.X
-          round += 1
-          if (updateMessage(board)) return
-          $message.innerText = 'Computer turn'
-
-          // Enemy move.
-          const { move } = algo(board, round, false)
-          board[move] = moves.O
-          $cells[move].innerText = moves.O
-          round += 1
-          if (updateMessage(board)) return
-          $message.innerText = 'Your turn'
-        },
-        false
-      )
-    })(i)
-  )
+module.exports = {
+  makeBoard,
+  makeMove,
+  checkGameState,
+  minimax,
+  alphaBeta
 }

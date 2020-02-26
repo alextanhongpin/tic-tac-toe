@@ -1,83 +1,98 @@
 const {
-  isGameOver,
-  isDraw,
   makeBoard,
   makeMove,
-  makeGame,
-  HUMAN,
-  ENEMY
-} = require('./index.js')
+  checkGameState,
+  minimax,
+  alphaBeta
+} = require('./tic-tac-toe')
 
 describe('tic-tac-toe', () => {
-  it('should return a winning combination', () => {
-    const board = makeBoard()
-    board[0] = 'x'
-    board[1] = 'x'
-    board[2] = 'x'
-    expect(isGameOver(board, 'x')).toBeTruthy()
+  describe('.makeBoard', () => {
+    it('creates an empty board', () => {
+      expect(makeBoard()).toEqual(Array(9).fill(''))
+    })
   })
 
-  it('should create a new board', () => {
-    expect(makeBoard()).toEqual(['', '', '', '', '', '', '', '', ''])
+  describe('.makeMove', () => {
+    it('set the moves to the cell', () => {
+      const board = makeBoard()
+      const newBoard = makeMove(board, 'X', 0)
+      expect(newBoard[0]).toEqual('X')
+    })
   })
 
-  it('should declare a draw when there are no moves', () => {
-    const board = ['x', 'o', 'x', 'x', 'o', 'x', 'o', '', 'o']
-    expect(isDraw(board)).toBeTruthy()
-    expect(isDraw(makeBoard())).toBeFalsy()
-  })
-
-  it('should make a move', () => {
-    const board = makeBoard()
-    const newBoard = makeMove(board, 'x', 0)
-    expect(newBoard).toEqual(['x', '', '', '', '', '', '', '', ''])
-  })
-
-  describe('should create a new game', () => {
-    it('enemy starts first', () => {
-      const game = makeGame({ firstPlayer: ENEMY })
-      expect(game.score()).toEqual(0)
-
-      const newGame = game.move(0)
-      expect(newGame.board()).toEqual([ENEMY, '', '', '', '', '', '', '', ''])
-      expect(newGame.score()).toEqual(0)
-
-      const nextGame = newGame.move(1)
-      expect(nextGame.board()).toEqual([
-        ENEMY,
-        HUMAN,
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        ''
-      ])
-      expect(nextGame.score()).toEqual(0)
+  describe('.checkGameState', () => {
+    it('returns initial state', () => {
+      const board = makeBoard()
+      const state = checkGameState(board)
+      expect(state.isWon).toBeFalsy()
+      expect(state.isDraw).toBeFalsy()
+      expect(state.humanWin).toBeFalsy()
+      expect(state.enemyWin).toBeFalsy()
     })
 
-    it('scores correctly', () => {
-      const game = makeGame()
-      const endGame = game
-        .move(0)
-        .move(3)
-        .move(1)
-        .move(4)
-        .move(2)
-      expect(endGame.score()).toEqual(5)
+    it('returns the draw state', () => {
+      const board = ['x', 'o', 'x', 'o', 'x', 'o', 'o', 'x', 'o']
+      const state = checkGameState(board)
+      expect(state.isWon).toBeFalsy()
+      expect(state.isDraw).toBeTruthy()
+      expect(state.humanWin).toBeFalsy()
+      expect(state.enemyWin).toBeFalsy()
     })
 
-    it('recommends the best move', () => {
-      const game = makeGame()
-      const midGame = game
-        .move(0)
-        .move(3)
-        .move(1)
-        .move(4)
-      const minmax = midGame.minimax(midGame.state())
-      const endGame = midGame.move(minmax.move)
-      expect(endGame.isEndGame()).toBeTruthy()
+    it('returns the winning human state', () => {
+      const board = ['x', 'x', 'x', 'o', 'o', '', '', '', '']
+      const state = checkGameState(board)
+      expect(state.isWon).toBeTruthy()
+      expect(state.isDraw).toBeFalsy()
+      expect(state.humanWin).toBeTruthy()
+      expect(state.enemyWin).toBeFalsy()
+    })
+
+    it('returns the winning enemy state', () => {
+      const board = ['x', 'x', 'o', 'o', 'o', 'o', 'x', '', '']
+
+      const state = checkGameState(board)
+      expect(state.isWon).toBeTruthy()
+      expect(state.isDraw).toBeFalsy()
+      expect(state.humanWin).toBeFalsy()
+      expect(state.enemyWin).toBeTruthy()
+    })
+  })
+
+  const testAlgo = algo => {
+    const tests = [
+      {
+        board: ['x', 'x', 'o', 'o', 'o', '', 'x', 'x', ''],
+        depth: 7,
+        bestMove: 5
+      },
+      {
+        board: ['x', 'x', '', 'o', 'o', '', 'x', '', ''],
+        depth: 5,
+        bestMove: 5
+      },
+      {
+        board: ['x', 'o', '', 'x', '', '', '', '', ''],
+        depth: 3,
+        bestMove: 6
+      }
+    ]
+    for (const { board, bestMove, depth } of tests) {
+      const { move } = algo(board, depth, false)
+      expect(move).toEqual(bestMove)
+    }
+  }
+  describe('minimax', () => {
+    it('returns the best move for enemy', () => {
+      testAlgo(minimax)
+    })
+  })
+
+  describe('alphaBeta', () => {
+    it('returns the best move for enemy', () => {
+      testAlgo(alphaBeta)
     })
   })
 })
+
